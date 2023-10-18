@@ -1,0 +1,174 @@
+PROJECT: Global SuperStore
+  
+****Select the data I will be working with
+SELECT  *
+FROM   `personal-projects-399614.VIZ001.SuperStore` 
+
+
+****Check for the days difference
+SELECT 
+       order_date,
+       ship_date,
+       city,
+       Ship_Mode,
+       DATE_DIFF(ship_date, order_date, DAY) AS days_difference
+FROM  `personal-projects-399614.VIZ001.SuperStore` 
+
+
+****Looking for the highest sold product
+SELECT 
+          Product_Name, 
+          SUM(Quantity) AS TotalQuantitySold
+FROM  `   personal-projects-399614.VIZ001.SuperStore` 
+GROUP BY  Product_Name 
+ORDER BY  TotalQuantitySold DESC
+          LIMIT 1;
+
+
+****Checking for total sales based on categories
+SELECT 
+         Category,
+         SUM(sales) AS TotalSales
+ FROM   `personal-projects-399614.VIZ001.SuperStore`
+GROUP BY
+         Category
+
+
+****Finding the date with the highest order
+SELECT 
+          Order_Date, 
+          SUM(Quantity) AS HigestOrderDate
+FROM     `personal-projects-399614.VIZ001.SuperStore` 
+GROUP BY  Order_Date
+ORDER BY  HigestOrderDate DESC
+          LIMIT 200;
+
+
+*******Checking the months that has the higest order
+SELECT  
+         EXTRACT(MONTH FROM Order_Date) AS Month,
+         SUM(sales) AS TotalSales
+FROM  `personal-projects-399614.VIZ001.SuperStore` 
+GROUP BY
+         Month
+ORDER BY
+         TotalSales DESC
+         
+
+
+*****Identifying the top 50 cities with the highest patronage.
+SELECT 
+          City, 
+          SUM(Quantity) AS TotalQuantitySold
+FROM     `personal-projects-399614.VIZ001.SuperStore`
+GROUP BY  City
+ORDER BY  TotalQuantitySold DESC
+          LIMIT 50;
+
+
+
+****Calculating the total Annual Profit
+SELECT
+        EXTRACT(YEAR FROM  Order_Date) AS Year,
+        SUM(Sales) AS TotalProfit
+FROM   `personal-projects-399614.VIZ001.SuperStore` 
+GROUP BY
+        Year
+ORDER BY
+        Year;
+
+
+
+****Calculating total monthly profits for each year 
+SELECT
+       EXTRACT(YEAR FROM  Order_Date) AS Year,
+       EXTRACT(MONTH FROM  Order_Date) AS Month,
+       SUM(Sales) AS TotalProfit
+FROM  `personal-projects-399614.VIZ001.SuperStore` 
+WHERE
+       EXTRACT(YEAR FROM Order_Date) IN (2014, 2015, 2016,2017)
+GROUP BY
+      Year, Month
+ORDER BY
+      Year, Month;
+    
+    
+****Total monthly discount per year
+SELECT
+       EXTRACT(YEAR FROM  Order_Date) AS Year,
+       EXTRACT(MONTH FROM  Order_Date) AS Month,
+       SUM(Discount) AS TotalDiscount,
+       SUM(Sales) AS TotalProfit
+FROM  `personal-projects-399614.VIZ001.SuperStore` 
+WHERE
+       EXTRACT(YEAR FROM Order_Date) IN (2014, 2015, 2016,2017)
+GROUP BY
+       Year, Month
+ORDER BY
+       Year,Month;
+
+
+
+****Analyzing total discount based on category
+SELECT 
+      Category,
+      SUM(Discount) AS TotalDiscount
+FROM `personal-projects-399614.VIZ001.SuperStore` 
+GROUP BY
+      Category
+ORDER BY
+      TotalDiscount
+
+
+****Discovering the connection between discounts and sales
+SELECT 
+       EXTRACT(Year FROM Order_Date) AS Year,
+       SUM(Discount) AS TotalDiscount,
+       SUM(Sales) AS TotalSales,
+FROM  `personal-projects-399614.VIZ001.SuperStore` 
+WHERE
+      EXTRACT(Year FROM Order_Date) BETWEEN 2014 AND 2017
+GROUP BY
+      Year
+ORDER BY
+      Year DESC
+ 
+ 
+*****Discovering the best Patronizing customer per year
+WITH SalesPerCustomer AS (
+  SELECT
+        EXTRACT(YEAR FROM Order_Date) AS Year,
+        Customer_ID,
+        Customer_Name,
+        SUM(Sales) AS TotalSales
+  FROM `personal-projects-399614.VIZ001.SuperStore` 
+  WHERE
+        EXTRACT(YEAR FROM Order_Date) IN (2014,2015,2016,2017)
+  GROUP BY
+        Year,Customer_Name,Customer_ID
+)
+SELECT
+    Customer_ID,
+    Customer_Name,
+    Year,
+    TotalSales
+FROM (
+    SELECT
+        Year,
+        Customer_ID,
+        Customer_Name,
+        TotalSales,
+        ROW_NUMBER() OVER(PARTITION BY Year ORDER BY TotalSales DESC) AS rn
+    FROM
+        SalesPerCustomer
+) AS RankedSales
+WHERE
+    rn = 1
+ORDER BY
+    Year;
+
+
+
+
+
+
